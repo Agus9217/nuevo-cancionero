@@ -9,5 +9,5 @@ import java.util.List;
 @Repository
 public interface ISongRepository extends JpaRepository<Song, Long> {
 
-    List<Song> findByTitle(String title);
+    List<Song> findByTitulo(String title);
 }

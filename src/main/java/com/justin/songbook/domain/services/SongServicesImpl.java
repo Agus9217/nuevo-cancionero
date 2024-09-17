@@ -1,12 +1,15 @@
 package com.justin.songbook.domain.services;
 
+import com.justin.songbook.application.dtos.SongDto;
 import com.justin.songbook.domain.entities.Song;
-import com.justin.songbook.domain.error.ErrorResponse;
+import com.justin.songbook.domain.error.NotFoundResponse;
 import com.justin.songbook.infraestructure.repository.ISongRepository;
+import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
 
+@Service
 public class SongServicesImpl implements ISongServices {
 
     final private ISongRepository songRepository;
@@ -15,43 +18,84 @@ public class SongServicesImpl implements ISongServices {
         this.songRepository = songRepository;
     }
 
+
     @Override
-    public List<Song> findAllSongs() {
+    public List<SongDto> findAllSongs() throws NotFoundResponse {
         List<Song> songs = songRepository.findAll();
-        if (songs.isEmpty()){
-            throw new ErrorResponse("Something is wrong", 404);
+        if (songs.isEmpty()) {
+            throw new NotFoundResponse("No existe la cancion");
         }
-        return songs;
+        return songs.stream()
+                .map(song -> new SongDto(
+                        song.getTitulo(),
+                        song.getTonalidad(),
+                        song.getLetra()
+                ))
+                .toList();
     }
 
     @Override
-    public Song findSongById(long id) {
-        Optional<Song> song = songRepository.findById(id);
-        if (song.isPresent()){
-            return song.get();
-        }
-        throw new ErrorResponse("Something is wrong", 404);
+    public SongDto findSongById(Long id) throws NotFoundResponse {
+        Song song = songRepository.findById(id)
+                .orElseThrow(
+                        ()-> new NotFoundResponse("No existe la cancion"));
+        return new SongDto(
+                song.getTitulo(),
+                song.getTonalidad(),
+                song.getLetra()
+        );
     }
 
     @Override
-    public List<Song> findSongByTitle(String title) {
-        List<Song> song = songRepository.findByTitle(title);
-        if (song.isEmpty()){
-            throw new ErrorResponse("Song not found", 404);
+    public List<SongDto> findSongByTitle(String title) throws NotFoundResponse {
+        List<Song> songs = songRepository.findByTitulo(title);
+        if (songs.isEmpty()) {
+            throw new NotFoundResponse("No hay canciones por el titulo");
         }
-        return song;
+        return songs.stream()
+                .map(song -> new SongDto(
+                        song.getTitulo(),
+                        song.getTonalidad(),
+                        song.getLetra()
+                ))
+                .toList();
     }
 
     @Override
-    public void deleteSongById(long id) {
-        if (songRepository.existsById(id)){
-            songRepository.deleteById(id);
+    public void deleteSongById(Long id) throws NotFoundResponse {
+        if (!songRepository.existsById(id)) {
+            throw new NotFoundResponse("La cancion que intentas eliminar no existe");
         }
-        throw new ErrorResponse("Something is wrong", 404);
+        songRepository.deleteById(id);
     }
 
     @Override
-    public Song saveSong(Song song) {
-        return null;
+    public Song saveSong(SongDto song) throws NotFoundResponse {
+        if (song.getTitulo().isEmpty()){
+            throw new NotFoundResponse("El titulo no puede ser nulo");
+        }
+        Song savedSong = new Song(
+                null,
+                song.getLetra(),
+                song.getTonalidad(),
+                song.getTitulo()
+        );
+        return songRepository.save(savedSong);
+    }
+
+    @Override
+    public Song updateSong(Long id, SongDto song) throws NotFoundResponse {
+        Optional<Song> songOptional = songRepository.findById(id);
+        if (songOptional.isEmpty()) {
+            throw new NotFoundResponse("La cancion que quieres actualizar no existe");
+        }
+        Song songToUpdate = songOptional.get();
+        Song songToSave = new Song(
+                null,
+                songToUpdate.getLetra(),
+                songToUpdate.getTonalidad(),
+                songToUpdate.getTitulo()
+        );
+        return songRepository.save(songToSave);
     }
 }
