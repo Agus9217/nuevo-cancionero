@@ -2,8 +2,8 @@ package com.justin.songbook.domain.services;
 
 import com.justin.songbook.application.dtos.SongDto;
 import com.justin.songbook.domain.entities.Song;
-import com.justin.songbook.domain.error.NotFoundResponse;
 import com.justin.songbook.infraestructure.repository.ISongRepository;
+import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -20,10 +20,10 @@ public class SongServicesImpl implements ISongServices {
 
 
     @Override
-    public List<SongDto> findAllSongs() throws NotFoundResponse {
+    public List<SongDto> findAllSongs() throws BadRequestException {
         List<Song> songs = songRepository.findAll();
         if (songs.isEmpty()) {
-            throw new NotFoundResponse("No existe la cancion");
+            throw new BadRequestException("No existe la cancion");
         }
         return songs.stream()
                 .map(song -> new SongDto(

@@ -1,8 +1,8 @@
 package com.justin.songbook.interfaces.controller;
 
 import com.justin.songbook.application.dtos.SongDto;
-import com.justin.songbook.domain.error.NotFoundResponse;
 import com.justin.songbook.domain.services.ISongServices;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -21,7 +21,7 @@ public class SongController {
     }
 
     @GetMapping("/")
-    public ResponseEntity<List<SongDto>> getAllSongs() throws NotFoundResponse {
+    public ResponseEntity<List<SongDto>> getAllSongs() throws BadRequestException {
         List<SongDto> allSongs = songServices.findAllSongs();
         return ResponseEntity.ok(allSongs);
     }

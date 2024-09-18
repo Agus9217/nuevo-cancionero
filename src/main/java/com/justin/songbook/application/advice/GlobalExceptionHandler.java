@@ -1,26 +1,26 @@
 package com.justin.songbook.application.advice;
 
 import com.justin.songbook.domain.error.ErrorMessage;
-import com.justin.songbook.domain.error.NotFoundResponse;
+import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
-import org.springframework.web.servlet.mvc.method.annotation.ResponseEntityExceptionHandler;
 
 @ControllerAdvice
 @RestControllerAdvice
-public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
+public class GlobalExceptionHandler {
 
-    @ExceptionHandler(NotFoundResponse.class)
+    @ExceptionHandler(BadRequestException.class)
     @ResponseStatus(HttpStatus.NOT_FOUND)
-    public ResponseEntity<ErrorMessage>notFoundErrorResponse(NotFoundResponse ex){
+    public ResponseEntity<ErrorMessage>notFoundErrorResponse(BadRequestException badRequestException){
         ErrorMessage errorMessage = new ErrorMessage(
-                ex.getMessage(),
-                HttpStatus.NOT_FOUND
+                badRequestException.getMessage(),
+                HttpStatus.BAD_REQUEST
         );
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(errorMessage);
+        return new ResponseEntity<>(errorMessage, errorMessage.getStatus());
+
     }
 }
